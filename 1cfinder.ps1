@@ -5,7 +5,9 @@
     [string]$filename="*.1CD",
     [switch]$alldrivers=$false,
     [string]$prevfile=".\infobases.prev.csv",
-    [string]$lastfile=".\infobases.csv"
+    [string]$lastfile=".\infobases.csv",
+    [string]$newfile=".\appended.csv",
+    [string]$delfile=".\deleted.csv"
 )
 
 function GetAllDrivers()
@@ -82,10 +84,14 @@ if( Test-Path $lastfile){
 }else{ 
     $last = $null
 }
-git 
+
 if( $prev -ne $null -and $lastfile -ne $null){
-    $cmp = Compare-Object  $prev.FullName $last.FullName
-    $cmp | ConvertTo-Json
+    $new = Compare-Object  $prev.FullName $last.FullName | where { $_.SideIndicator -ne "<=" }
+    $del = Compare-Object  $prev.FullName $last.FullName | where { $_.SideIndicator -ne "=>" }
+    $new | ConvertTo-Csv | Out-File -Encoding UTF8 $newfile
+    $del | ConvertTo-Csv | Out-File -Encoding UTF8 $delfile
+    $r = @{"append"= ($new | measure).count; "deleted"=($del | measure).count}
+    $r | ConvertTo-Json
+}else{
+    Write-Host -NoNewline 0
 }
-
-
