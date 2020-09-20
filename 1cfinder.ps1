@@ -39,6 +39,10 @@ if($help){
     -dir path - search infobases in path, default search in all drivers
     -filename - filename, wildcard, default *.1CD
     -alldrivers - find filename over all drivers
+    -prevfile - filename for result of prev searching
+    -lastfile - filename for result of last searching
+    -newfile - file for list of append files
+    -delfile - file for list of deleted files
     ";
     Write-Output($h);
     Exit;
@@ -56,9 +60,7 @@ if($alldrivers){
 
     $drivers =  GetAllDrivers
     SearchInfobases $drivers $filename | ConvertTo-Csv  | Out-File -Encoding "UTF8" infobases.csv
-
     
-
 }else{
 
     if( Test-Path $prevfile){
@@ -93,5 +95,5 @@ if( $prev -ne $null -and $lastfile -ne $null){
     $r = @{"append"= ($new | measure).count; "deleted"=($del | measure).count}
     $r | ConvertTo-Json
 }else{
-    Write-Host -NoNewline 0
+    Write-Host -NoNewline "{\"append\":  0, \"deleted\":  0 }"
 }
