@@ -70,9 +70,19 @@ if($alldrivers){
 
 }
 
+if(Test-Path $prevfile)
+{
+    $prev = Import-Csv -Encoding UTF8 $prevfile
+}else{
+    $prev = $null
+}
 
-$prev = Import-Csv -Encoding UTF8 $prevfile
-$last = Import-Csv -Encoding UTF8 $lastfile
+if( Test-Path $lastfile){
+    $last = Import-Csv -Encoding UTF8 $lastfile
+}else{ 
+    $last = $null
+}
+
 if( $prev -ne $null -and $lastfile -ne $null){
     $cmp = Compare-Object  $prev.FullName $last.FullName
     $cmp | ConvertTo-Json
