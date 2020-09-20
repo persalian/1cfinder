@@ -47,7 +47,7 @@ if($alldrivers){
     Rename-Item -Path .\infobases.csv -NewName .\infobases.prev.csv -Force
 
     $drivers =  GetAllDrivers
-    SearchInfobases $drivers $pfilename | ConvertTo-Csv  | Out-File -Encoding "UTF8" infobases.csv
+    SearchInfobases $drivers $filename | ConvertTo-Csv  | Out-File -Encoding "UTF8" infobases.csv
 
     
 
@@ -56,7 +56,7 @@ if($alldrivers){
     Remove-Item -Path .\infobases.prev.csv -Force
     Rename-Item -Path .\infobases.csv -NewName .\infobases.prev.csv -Force
 
-    SearchInfobases $plocate $pfilename | ConvertTo-Csv  | Out-File -Encoding "UTF8" infobases.csv
+    SearchInfobases $dir $filename | ConvertTo-Csv  | Out-File -Encoding "UTF8" infobases.csv
 
 }
 
