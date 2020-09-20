@@ -3,7 +3,9 @@
     [switch]$help=$false,
     [switch]$debug=$false,
     [string]$filename="*.txt",
-    [switch]$alldrivers=$false
+    [switch]$alldrivers=$false,
+    [string]$prevfile=".\infobases.prev.csv",
+    [string]$lastfile=".\infobases.csv"
 )
 
 function GetAllDrivers()
@@ -43,8 +45,12 @@ if($help){
 
 if($alldrivers){
     
-    Remove-Item -Path .\infobases.prev.csv -Force
-    Rename-Item -Path .\infobases.csv -NewName .\infobases.prev.csv -Force
+    if( Test-Path $prevfile){
+        Remove-Item -Path $prevfile -Force
+    }
+    if( Test-Path $lastfile) {
+        Rename-Item -Path $lastfile -NewName $prevfile -Force
+    }
 
     $drivers =  GetAllDrivers
     SearchInfobases $drivers $filename | ConvertTo-Csv  | Out-File -Encoding "UTF8" infobases.csv
@@ -53,15 +59,23 @@ if($alldrivers){
 
 }else{
 
-    Remove-Item -Path .\infobases.prev.csv -Force
-    Rename-Item -Path .\infobases.csv -NewName .\infobases.prev.csv -Force
+    if( Test-Path $prevfile){
+        Remove-Item -Path $prevfile -Force
+    }
+    if( Test-Path $lastfile) {
+        Rename-Item -Path $lastfile -NewName $prevfile -Force
+    }
 
     SearchInfobases $dir $filename | ConvertTo-Csv  | Out-File -Encoding "UTF8" infobases.csv
 
 }
 
 
-$prev = Import-Csv -Encoding UTF8 .\infobases.prev.csv
-$last = Import-Csv -Encoding UTF8 .\infobases.csv
-$cmp = Compare-Object  $prev.FullName $last.FullName
-$cmp | ConvertTo-Json
+$prev = Import-Csv -Encoding UTF8 $prevfile
+$last = Import-Csv -Encoding UTF8 $lastfile
+if( $prev -ne $null -and $lastfile -ne $null){
+    $cmp = Compare-Object  $prev.FullName $last.FullName
+    $cmp | ConvertTo-Json
+}
+
+
