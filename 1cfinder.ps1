@@ -1,8 +1,8 @@
 ﻿param (
-    [string]$dir="C:\Users\andrey_2\desktop",
+    [string]$dir=".",
     [switch]$help=$false,
     [switch]$debug=$false,
-    [string]$filename="*.txt",
+    [string]$filename="*.1CD",
     [switch]$alldrivers=$false,
     [string]$prevfile=".\infobases.prev.csv",
     [string]$lastfile=".\infobases.csv"
@@ -73,7 +73,7 @@ if($alldrivers){
 if(Test-Path $prevfile)
 {
     $prev = Import-Csv -Encoding UTF8 $prevfile
-}else{
+}else{git bran
     $prev = $null
 }
 
@@ -82,7 +82,7 @@ if( Test-Path $lastfile){
 }else{ 
     $last = $null
 }
-
+git 
 if( $prev -ne $null -and $lastfile -ne $null){
     $cmp = Compare-Object  $prev.FullName $last.FullName
     $cmp | ConvertTo-Json
