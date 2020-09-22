@@ -77,7 +77,7 @@ if($alldrivers){
 if(Test-Path $prevfile)
 {
     $prev = Import-Csv -Encoding UTF8 $prevfile
-}else{git bran
+}else{
     $prev = $null
 }
 
