@@ -3,6 +3,7 @@
     [switch]$help=$false,
     [switch]$debug=$false,
     [string]$filename="*.1CD",
+    [string]$exclude="1Cv8tmp.1CD",
     [switch]$alldrivers=$false,
     [string]$prevfile=".\infobases.prev.csv",
     [string]$lastfile=".\infobases.csv",
@@ -20,10 +21,10 @@ function GetAllDrivers()
 
 }
 
-function SearchInfobases($path, [string]$ext)
+function SearchInfobases($path, [string]$ext, [string]$exc)
 {
     
-    return Get-ChildItem -Path $path -Include "$ext" -Recurse -ErrorAction SilentlyContinue  | Select FullName
+    return Get-ChildItem -Path $path -Include "$ext" -Exclude $exc -Recurse -ErrorAction SilentlyContinue  | Select FullName
 
 }
 
@@ -35,9 +36,10 @@ if($debug){
 if($help){
     $h = "
     Finding 1c infobases on server
-    1cfinder [ -path path-to-folder | -alldrivers ] -filename filename
+    1cfinder:
     -dir path - search infobases in path, default search in all drivers
-    -filename - filename, wildcard, default *.1CD
+    -filename filename - filename, wildcard, default *.1CD
+    -exclude exclude-filename - exclude filenames, default 1Cv8tmp.1CD
     -alldrivers - find filename over all drivers
     -prevfile - filename for result of prev searching
     -lastfile - filename for result of last searching
@@ -59,7 +61,7 @@ if($alldrivers){
     }
 
     $drivers =  GetAllDrivers
-    SearchInfobases $drivers $filename | ConvertTo-Csv  | Out-File -Encoding "UTF8" infobases.csv
+    SearchInfobases $drivers $filename $exclude | ConvertTo-Csv  | Out-File -Encoding "UTF8" infobases.csv
     
 }else{
 
@@ -70,7 +72,7 @@ if($alldrivers){
         Rename-Item -Path $lastfile -NewName $prevfile -Force
     }
 
-    SearchInfobases $dir $filename | ConvertTo-Csv  | Out-File -Encoding "UTF8" infobases.csv
+    SearchInfobases $dir $filename $exclude | ConvertTo-Csv  | Out-File -Encoding "UTF8" infobases.csv
 
 }
 
@@ -95,5 +97,6 @@ if( $prev -ne $null -and $lastfile -ne $null){
     $r = @{"append"= ($new | measure).count; "deleted"=($del | measure).count}
     $r | ConvertTo-Json
 }else{
-    Write-Host -NoNewline "{\"append\":  0, \"deleted\":  0 }"
+    $r = @{"append"= 0; "deleted"=0}
+    $r | ConvertTo-Json
 }
