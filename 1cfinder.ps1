@@ -4,22 +4,24 @@
     [switch]$debug=$false,
     [string]$filename="*.1CD",
     [string]$exclude="1Cv8tmp.1CD",
-    [switch]$alldrivers=$false,
+    [switch]$alldrivers=$true,
     [string]$prevfile=".\infobases.prev.csv",
     [string]$lastfile=".\infobases.csv",
     [string]$newfile=".\appended.csv",
     [string]$delfile=".\deleted.csv"
 )
 
+# массив имен томов
 function GetAllDrivers()
 {
-    $drivers = (Get-Volume |  Where-Object { $_.DriveLetter -ne $null} ).DriveLetter
+    $drivers = (Get-Volume |  Where-Object { $_.DriveLetter -ne 0} ).DriveLetter
     for($i=0; $i -le $drivers.count-1; $i++){
         $drivers[$i] += ":\"
     }
     return $drivers
 
 }
+
 
 function SearchInfobases($path, [string]$ext, [string]$exc)
 {
@@ -28,53 +30,46 @@ function SearchInfobases($path, [string]$ext, [string]$exc)
 
 }
 
-
+#############################################################
 if($debug){
     $DebugPreference = 'Continue'
 }
 
 if($help){
     $h = "
-    Finding 1c infobases on server
+    Finding 1c infobases on local server
     1cfinder:
-    -dir path - search infobases in path, default search in all drivers
-    -filename filename - filename, wildcard, default *.1CD
-    -exclude exclude-filename - exclude filenames, default 1Cv8tmp.1CD
-    -alldrivers - find filename over all drivers
-    -prevfile - filename for result of prev searching
-    -lastfile - filename for result of last searching
-    -newfile - file for list of append files
-    -delfile - file for list of deleted files
+     -dir path - search infobases in path
+     -filename filename - filename, wildcard, default $filename
+     -exclude exclude-filename - exclude filenames, default $exclude
+     -alldrivers - find filename over all drivers,  default
+     -prevfile - filename for result of prev searching, default $prevfile
+     -lastfile - filename for result of last searching, default $lastfile
+     -newfile - file for list of append files, default $newfile
+     -delfile - file for list of deleted files, default $delfile
     ";
     Write-Output($h);
     Exit;
 }
 
 
+if( Test-Path $prevfile){
+        Remove-Item -Path $prevfile -Force
+}
+
+if( Test-Path $lastfile) {
+        Rename-Item -Path $lastfile -NewName $prevfile -Force
+}
+
 if($alldrivers){
     
-    if( Test-Path $prevfile){
-        Remove-Item -Path $prevfile -Force
-    }
-    if( Test-Path $lastfile) {
-        Rename-Item -Path $lastfile -NewName $prevfile -Force
-    }
-
-    $drivers =  GetAllDrivers
-    SearchInfobases $drivers $filename $exclude | ConvertTo-Csv  | Out-File -Encoding "UTF8" infobases.csv
-    
+    $path =  GetAllDrivers
+   
 }else{
-
-    if( Test-Path $prevfile){
-        Remove-Item -Path $prevfile -Force
-    }
-    if( Test-Path $lastfile) {
-        Rename-Item -Path $lastfile -NewName $prevfile -Force
-    }
-
-    SearchInfobases $dir $filename $exclude | ConvertTo-Csv  | Out-File -Encoding "UTF8" infobases.csv
-
+    $path = $dir
 }
+    
+SearchInfobases $path $filename $exclude | ConvertTo-Csv  | Out-File -Encoding "UTF8" infobases.csv
 
 if(Test-Path $prevfile)
 {
@@ -94,6 +89,7 @@ if( $prev -ne $null -and $lastfile -ne $null){
     $del = Compare-Object  $prev.FullName $last.FullName | where { $_.SideIndicator -ne "=>" }
     $new | ConvertTo-Csv | Out-File -Encoding UTF8 $newfile
     $del | ConvertTo-Csv | Out-File -Encoding UTF8 $delfile
+
     $r = @{"append"= ($new | measure).count; "deleted"=($del | measure).count}
     $r | ConvertTo-Json
 }else{
